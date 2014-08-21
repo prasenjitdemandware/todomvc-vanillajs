@@ -6,6 +6,7 @@ var webdriver = require('selenium-webdriver');
 var chrome = require('selenium-webdriver/chrome');
 var chromeDriver = require('selenium-chromedriver');
 
+var makeSelector = webdriver.By.css;
 var port = process.env.NODE_TEST_PORT || 8002;
 
 before(function(done) {
@@ -42,18 +43,34 @@ it('add new items to the list', function(){
 	var driver = this.driver;
 	var typeKeys = 'a task added';
 	
-	return driver.findElement(webdriver.By.css('#new-todo'))
+	return driver.findElement(makeSelector('#new-todo'))
 		.then(function(textInput){
 			return textInput.sendKeys(typeKeys, webdriver.Key.ENTER);
 		})
 		.then(function(){
-			return driver.findElements(webdriver.By.css('#todo-list li'));
+			return driver.findElements(makeSelector('#todo-list li'));
 		})
 		.then(function(todoItems){
 			assert.equal(todoItems.length, 1);
-			return todoItems[0].getText()
+			return todoItems[0].getText();
 		})
 		.then(function(inText){
 			assert.equal(inText, typeKeys);
+		});
+});
+
+it('verify the count of items is showing correctly', function(){
+	var driver = this.driver;
+	var typeKeys = 'a new task added';
+
+	return driver.findElement(makeSelector('#new-todo'))
+		.then(function(textInput){
+			return [textInput.sendKeys(typeKeys, webdriver.Key.ENTER), textInput.sendKeys(typeKeys + ' xyz', webdriver.Key.ENTER)];	// adding 2 items
 		})
+		.then(function(){
+			return driver.findElement(makeSelector('#todo-count strong')).getText();		// text.match(/\b(\d+)\b/), do not use 'strong'
+		})
+		.then(function(count){
+			assert.equal(count, 2);		
+		});
 });
