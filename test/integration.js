@@ -74,3 +74,57 @@ it('verify the count of items is showing correctly', function(){
 			assert.equal(count, 2);		
 		});
 });
+
+function createItem(){
+	var driver = this.driver;
+	var typeKeys = "some task";
+
+	return driver.findElement(makeSelector('#new-todo'))
+		.then(function(textInput){
+			return textInput.sendKeys(typeKeys, webdriver.Key.ENTER);
+		})
+}
+
+describe('item modification', function(){
+
+	beforeEach(function(){
+		var driver = this.driver;
+
+		return createItem.call(this).then(function(){
+			return driver.findElement(makeSelector('#todo-list li'));
+		})
+		.then(function(newItem){
+			this.newItem = newItem;
+		}.bind(this));
+	});
+
+	it('allows users to complete items', function(){
+		var driver = this.driver;
+
+		return driver.findElement(makeSelector('.toggle'))
+			.then(function(element){
+				return element.click();
+			})
+			.then(function(){
+				return driver.findElements(makeSelector('#todo-list .completed'))
+			})
+			.then(function(completedItems){
+				assert.equal(completedItems.length, 1);
+			})
+	});
+
+	it('allows users to update item text', function(){
+		var newItem = this.newItem; 
+
+		this.driver.actions()
+			.doubleClick(newItem)
+			.sendKeys(' and other things', webdriver.Key.ENTER)
+			.perform()
+			.then(function(){
+				return newItem.getText();
+			})
+			.then(function(text){
+				assert.equal(text, 'some task and other things');
+			});
+	});
+})
