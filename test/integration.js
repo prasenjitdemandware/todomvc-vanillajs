@@ -37,3 +37,23 @@ it('ensure todomvc is in the title', function(){
 		assert(/TodoMVC/.test(titleText));
 	});
 });
+
+it('add new items to the list', function(){
+	var driver = this.driver;
+	var typeKeys = 'a task added';
+	
+	return driver.findElement(webdriver.By.css('#new-todo'))
+		.then(function(textInput){
+			return textInput.sendKeys(typeKeys, webdriver.Key.ENTER);
+		})
+		.then(function(){
+			return driver.findElements(webdriver.By.css('#todo-list li'));
+		})
+		.then(function(todoItems){
+			assert.equal(todoItems.length, 1);
+			return todoItems[0].getText()
+		})
+		.then(function(inText){
+			assert.equal(inText, typeKeys);
+		})
+});
